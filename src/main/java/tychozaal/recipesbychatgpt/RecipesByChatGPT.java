@@ -1,13 +1,12 @@
-package com.tychozaal.RecipesByChatGPT;
+package tychozaal.recipesbychatgpt;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class RecipesByChatGptApplication {
+public class RecipesByChatGPT {
 
 	public static void main(String[] args) {
-		SpringApplication.run(RecipesByChatGptApplication.class, args);
+		SpringApplication.run(RecipesByChatGPT.class, args);
 	}
-
 }
