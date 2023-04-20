@@ -1,5 +1,6 @@
 package tychozaal.recipesbychatgpt.controller;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import tychozaal.recipesbychatgpt.models.Recipe;
 import tychozaal.recipesbychatgpt.models.User;
 import tychozaal.recipesbychatgpt.models.dto.LoginDto;
 import tychozaal.recipesbychatgpt.models.dto.NewUserDto;
@@ -69,7 +71,7 @@ public class UserController {
 		String encodedPassword = passwordEncoder.encode(newUserDto.getPassword());
 
 		User user = new User(newUserDto.getFirstName(), newUserDto.getLastName(), newUserDto.getEmail(),
-				encodedPassword, newUserDto.isAdmin());
+				encodedPassword, newUserDto.isAdmin(), new ArrayList<Recipe>());
 		User createdUser = userRepo.save(user);
 
 		// Send email verification

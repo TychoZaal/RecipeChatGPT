@@ -1,21 +1,34 @@
 package tychozaal.recipesbychatgpt.models;
 
 import javax.persistence.Column;
+import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 
+@Entity
 public class Ingredient {
 
-	public Ingredient(String name, String measurements) {
+	public Ingredient(String name, String measurements, Recipe recipe) {
 		super();
 		this.name = name;
 		this.measurements = measurements;
+		this.recipe = recipe;
 	}
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
+
+	@Column(nullable = false)
+	private String name;
+
+	@Column(nullable = false)
+	private String measurements;
+
+	@ManyToOne(optional = true)
+	private Recipe recipe;
 
 	public long getId() {
 		return id;
@@ -41,9 +54,11 @@ public class Ingredient {
 		this.measurements = measurements;
 	}
 
-	@Column(nullable = false)
-	private String name;
+	public Recipe getRecipe() {
+		return recipe;
+	}
 
-	@Column(nullable = false)
-	private String measurements;
+	public void setRecipe(Recipe recipe) {
+		this.recipe = recipe;
+	}
 }

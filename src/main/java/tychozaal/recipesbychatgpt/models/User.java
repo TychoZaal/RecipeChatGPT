@@ -1,10 +1,16 @@
 package tychozaal.recipesbychatgpt.models;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 public class User {
@@ -13,12 +19,13 @@ public class User {
 		// TODO Spring need this Default constructor. Add some status code?
 	}
 
-	public User(String firstName, String lastName, String email, String password, boolean admin) {
+	public User(String firstName, String lastName, String email, String password, boolean admin, List<Recipe> recipes) {
 		this.firstName = firstName;
 		this.lastName = lastName;
 		this.email = email;
 		this.password = password;
 		this.admin = admin;
+		this.recipes = recipes;
 	}
 
 	@Id
@@ -42,6 +49,10 @@ public class User {
 
 	@Column(nullable = true, length = 200, unique = true)
 	private String token;
+
+	@JsonIgnore
+	@OneToMany(mappedBy = "user")
+	private List<Recipe> recipes = new ArrayList<Recipe>();
 
 	public long getId() {
 		return id;
