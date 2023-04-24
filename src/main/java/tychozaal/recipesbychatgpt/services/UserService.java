@@ -116,9 +116,6 @@ public class UserService {
 
 	// TODO: Change return type to status
 	public boolean userIsAdmin(String token) {
-		// Override permissions if it is an automated process
-		if (token.equalsIgnoreCase("admin"))
-			return true;
 
 		// Check if user is logged in
 		if (!userIsLoggedIn(token)) {
