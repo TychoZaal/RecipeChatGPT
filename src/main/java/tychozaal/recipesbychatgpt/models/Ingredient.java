@@ -24,7 +24,7 @@ public class Ingredient {
 	@Column(nullable = false)
 	private String name;
 
-	@Column(nullable = false)
+	@Column(nullable = true)
 	private String measurements;
 
 	@ManyToOne(optional = true)
