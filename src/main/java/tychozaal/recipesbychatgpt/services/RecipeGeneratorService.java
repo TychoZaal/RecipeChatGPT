@@ -1,10 +1,9 @@
 package tychozaal.recipesbychatgpt.services;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -26,47 +25,24 @@ public class RecipeGeneratorService {
 
 	public APIResponse generateRecipe(List<Ingredient> ingredients, String typeOfMeal, String region) {
 		try {
-			String endpoint = "https://api.openai.com/v1/engines/davinci-codex/completions";
-			URL url = new URL(endpoint);
+			String prompt = formatInput(ingredients, typeOfMeal, region);
+			String apiKey = chatGPTKey;
+			String apiUrl = "https://api.openai.com/v1/engines/davinci/completions";
+			String requestBody = "{\"prompt\": \"" + prompt + "\", \"max_tokens\": 32}";
 
-			HttpURLConnection con = (HttpURLConnection) url.openConnection();
-			con.setRequestMethod("POST");
-			con.setRequestProperty("Content-Type", "application/json");
-			con.setRequestProperty("Authorization", chatGPTKey);
+			HttpClient client = HttpClient.newHttpClient();
+			HttpRequest request = HttpRequest.newBuilder().uri(URI.create(apiUrl))
+					.header("Content-Type", "application/json").header("Authorization", "Bearer " + apiKey)
+					.POST(HttpRequest.BodyPublishers.ofString(requestBody)).build();
 
-			con.setDoOutput(true);
+			HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+			String responseBody = response.body();
 
-			String data = "{" + "\"prompt\":\"" + formatInput(ingredients, typeOfMeal, region) + "\","
-					+ "\"max_tokens\":150," + "\"temperature\":0.7," + "\"stop\":[\"\n\"]" + "}";
-			byte[] postData = data.getBytes(StandardCharsets.UTF_8);
-
-			con.getOutputStream().write(postData);
-
-			BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-			StringBuilder response = new StringBuilder();
-			String line;
-			while ((line = in.readLine()) != null) {
-				response.append(line);
-			}
-			in.close();
-
-			return new APIResponse(HttpStatus.ACCEPTED, false, extractChatGPTResponse(response.toString()), "");
+			return new APIResponse(HttpStatus.ACCEPTED, false, responseBody, "");
 
 		} catch (Exception e) {
-			return new APIResponse(HttpStatus.BAD_REQUEST, false, null, e.toString());
+			return new APIResponse(HttpStatus.INTERNAL_SERVER_ERROR, false, null, e.toString());
 		}
-	}
-
-	private String extractChatGPTResponse(String jsonResponse) {
-		String[] lines = jsonResponse.split("\\r?\\n");
-
-		for (String line : lines) {
-			if (line.contains("\"text\"")) {
-				return line.split(":")[1].replace("\"", "").trim();
-			}
-		}
-
-		return null;
 	}
 
 	private String formatInput(List<Ingredient> ingredients, String typeOfMeal, String region) {
@@ -75,14 +51,13 @@ public class RecipeGeneratorService {
 
 		for (Ingredient ingredient : ingredients) {
 			String measurementString = ingredient.getMeasurements() != null ? ingredient.getMeasurements() : "";
-			ingredientsString += ", " + measurementString + " " + ingredient.getName();
+			ingredientsString += measurementString + " " + ingredient.getName() + ", ";
 		}
 
 		region = region == null ? "" : region;
 
-		return new String("Given the following ingredients: \r\n" + "\r\n" + ingredientsString + "\r\n"
-				+ "Can you provide me with a " + region + " " + typeOfMeal
-				+ " recipe that uses some or all of these ingredients?\r\n" + "\r\n"
+		return new String("Given the following ingredients: " + ingredientsString + ". " + "Can you provide me with a "
+				+ region + " " + typeOfMeal + " recipe that uses some or all of these ingredients? "
 				+ "Please start the response with the recipe name, then follow up with the list of ingredients, followed by the directions.");
 	}
 
