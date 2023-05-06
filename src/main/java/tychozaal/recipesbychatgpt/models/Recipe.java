@@ -11,16 +11,18 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 @Entity
 public class Recipe {
 
-	public Recipe(String name, List<Ingredient> ingredients, String timeToCook, User user) {
+	public Recipe() {
+
+	}
+
+	public Recipe(String name, List<Ingredient> ingredients, String cookingDirections, User user) {
 		super();
 		this.name = name;
 		this.ingredients = ingredients;
-		this.timeToCook = timeToCook;
+		this.cookingDirections = cookingDirections;
 		this.user = user;
 	}
 
@@ -31,12 +33,12 @@ public class Recipe {
 	@Column(nullable = false)
 	private String name;
 
-	@JsonIgnore
 	@OneToMany(mappedBy = "recipe")
+	@Column(nullable = false)
 	private List<Ingredient> ingredients = new ArrayList<Ingredient>();
 
 	@Column(nullable = true)
-	private String timeToCook;
+	private String cookingDirections;
 
 	@ManyToOne(optional = true)
 	private User user;
@@ -65,12 +67,12 @@ public class Recipe {
 		this.ingredients = ingredients;
 	}
 
-	public String getTimeToCook() {
-		return timeToCook;
+	public String getCookingDirections() {
+		return cookingDirections;
 	}
 
-	public void setTimeToCook(String timeToCook) {
-		this.timeToCook = timeToCook;
+	public void setCookingDirections(String cookingDirections) {
+		this.cookingDirections = cookingDirections;
 	}
 
 	public User getUser() {
