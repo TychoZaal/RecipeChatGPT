@@ -27,8 +27,9 @@ public class RecipeGeneratorService {
 		try {
 			String prompt = formatInput(ingredients, typeOfMeal, region);
 			String apiKey = chatGPTKey;
-			String apiUrl = "https://api.openai.com/v1/engines/davinci/completions";
-			String requestBody = "{\"prompt\": \"" + prompt + "\", \"max_tokens\": 32}";
+			String apiUrl = "https://api.openai.com/v1/chat/completions";
+			String requestBody = "{\"model\":\"gpt-3.5-turbo\",\"messages\":[{\"role\":\"user\",\"content\":\"%s\"}]}"
+					.formatted(prompt);
 
 			HttpClient client = HttpClient.newHttpClient();
 			HttpRequest request = HttpRequest.newBuilder().uri(URI.create(apiUrl))
@@ -38,7 +39,7 @@ public class RecipeGeneratorService {
 			HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 			String responseBody = response.body();
 
-			return new APIResponse(HttpStatus.ACCEPTED, false, responseBody, "");
+			return new APIResponse(HttpStatus.ACCEPTED, true, responseBody, "");
 
 		} catch (Exception e) {
 			return new APIResponse(HttpStatus.INTERNAL_SERVER_ERROR, false, null, e.toString());
