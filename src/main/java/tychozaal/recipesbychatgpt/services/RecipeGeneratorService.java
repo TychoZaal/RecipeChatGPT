@@ -6,9 +6,8 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -114,6 +113,7 @@ public class RecipeGeneratorService {
 		recipe.setName(name);
 		recipe.setIngredients(parseIngredients(ingredients));
 		recipe.setCookingDirections(directions);
+
 		// TODO: Add user to recipe and vise versa
 
 		return recipe;
@@ -124,7 +124,7 @@ public class RecipeGeneratorService {
 		List<Ingredient> ingredientsInString = new ArrayList<Ingredient>();
 
 		String prompt = "Given the following input: \\n" + ingredientsString
-				+ "\\n Please convert the String into an Ingredient object where the quantity, unit, and name are extracted. If any of the fields are empty, please fill it up with 'N/A'";
+				+ "\\n Please convert the String into an Ingredient object where ONLY the quantity, unit, and name are extracted. If any of the fields are empty, please fill it up with 'N/A'";
 
 		String responseBody = askChatGPT(prompt);
 
@@ -133,16 +133,66 @@ public class RecipeGeneratorService {
 		String cleanResponseBody = responseBody
 				.substring(responseBody.indexOf("Result:") + 7, responseBody.indexOf("finish_reason")).trim();
 
-		String regex = "Quantity: (\\\\d+/?\\\\d*)\\\\s*Unit: (\\\\w*)\\\\s*Name: (.*)";
-		Pattern pattern = Pattern.compile(regex);
-		Matcher matcher = pattern.matcher(cleanResponseBody);
+		cleanResponseBody = cleanResponseBody.replaceAll("\\\\n", " ");
+		cleanResponseBody = cleanResponseBody.substring(0, cleanResponseBody.length() - 4);
+		cleanResponseBody = cleanResponseBody.replaceAll("-", "");
+		cleanResponseBody = cleanResponseBody.trim().replaceAll("  ", " ");
+		cleanResponseBody = cleanResponseBody.trim().replaceAll("  ", " ");
+		cleanResponseBody = cleanResponseBody.toLowerCase();
 
-		while (matcher.find()) {
-			String quantity = matcher.group(1);
-			String unit = matcher.group(2);
-			String name = matcher.group(3);
+		String ingredientsBody = cleanResponseBody;
 
-			ingredientsInString.add(new Ingredient(name, quantity + unit, null));
+		// Clean up string a final time
+		ingredientsBody = ingredientsBody.replaceAll("(?i)Ingredients", "");
+		ingredientsBody = ingredientsBody.replaceAll("(?i)Ingredient", "");
+		ingredientsBody = ingredientsBody.replaceAll("(?i)object", "");
+		ingredientsBody = ingredientsBody.replaceAll(":", "");
+		ingredientsBody = ingredientsBody.trim().replaceAll(" +", " ");
+
+		int quantity = ingredientsBody.indexOf("quantity");
+		int unit = ingredientsBody.indexOf("unit");
+		int name = ingredientsBody.indexOf("name");
+
+		// Keep parsing ingredients from String, until parsing the next ingredient has
+		// failed
+		while (quantity != -1 && unit != -1 && name != -1) {
+			String quantityString = ingredientsBody.substring(quantity, unit);
+			String unitString = ingredientsBody.substring(unit, name);
+
+			// Crop String and search for next Ingredient's properties
+			// Else quantity will be the same as before the while loop
+			ingredientsBody = ingredientsBody.substring(name);
+
+			name = ingredientsBody.indexOf("name");
+			quantity = ingredientsBody.indexOf("quantity");
+
+			String nameString = "";
+
+			// If there are more ingredients, crop starting from next ingredient's quantity
+			if (quantity != -1) {
+				nameString = ingredientsBody.substring(name, quantity);
+				ingredientsBody = ingredientsBody.substring(quantity);
+			} else {
+				nameString = ingredientsBody.substring(name);
+			}
+
+			// Clean up strings before assigning values to new Ingredient
+			String ingredientName = nameString.replaceAll("(?i)name", "").trim();
+			ingredientName = StringUtils.capitalize(ingredientName);
+
+			// Clean up measurement string
+			unitString = unitString.replaceAll("(?i)n/a", "");
+			String ingredientMeasurement = quantityString + unitString;
+			ingredientMeasurement = ingredientMeasurement.replaceAll("(?i)unit", "");
+			ingredientMeasurement = ingredientMeasurement.replaceAll("(?i)quantity", "");
+			ingredientMeasurement = ingredientMeasurement.trim().replaceAll(" +", " ");
+
+			// Add ingredient to list
+			ingredientsInString.add(new Ingredient(ingredientName, ingredientMeasurement, null));
+
+			quantity = ingredientsBody.indexOf("quantity");
+			unit = ingredientsBody.indexOf("unit");
+			name = ingredientsBody.indexOf("name");
 		}
 
 		return ingredientsInString;
