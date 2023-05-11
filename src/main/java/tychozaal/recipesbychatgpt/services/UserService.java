@@ -102,16 +102,13 @@ public class UserService {
 		}
 	}
 
+	private User getUserByToken(String token) {
+		return userRepo.findByToken(token);
+	}
+
 	// TODO: Change return type to status
 	public boolean userIsLoggedIn(String token) {
-		User loggedInUser = userRepo.findByToken(token);
-
-		if (loggedInUser == null) {
-			return false; // User not logged in
-		}
-
-		// User is logged in, add success code
-		return true;
+		return getUserByToken(token) != null;
 	}
 
 	// TODO: Change return type to status
@@ -122,19 +119,11 @@ public class UserService {
 			return false;
 		}
 
-		User loggedInUser = userRepo.findByToken(token);
-
-		if (!loggedInUser.isAdmin()) {
-			// User has invalid permissions
-			return false;
-		}
-
-		// User is logged in, and has admin permissions
-		return true;
+		return getUserByToken(token).isAdmin();
 	}
 
 	// TODO: Change return type to status
-	public boolean userIdMatches(String token, long userId) {
+	public boolean userIdMatches(String token, long userId, boolean overrideAble) {
 
 		// Check if user is logged in
 		if (!userIsLoggedIn(token)) {
@@ -142,15 +131,11 @@ public class UserService {
 		}
 
 		// Override permission check if an admin does it
-		if (userIsAdmin(token)) {
+		if (overrideAble && userIsAdmin(token)) {
 			return true;
 		}
 
-		User loggedInUser = userRepo.findByToken(token);
-
-		// Check if intended user id is the same as the actual user id
-		// This is done to prevent changing
-		return userId == loggedInUser.getId();
+		return userId == getUserByToken(token).getId();
 	}
 
 	@GetMapping("user/all")
@@ -196,5 +181,31 @@ public class UserService {
 		} catch (Exception e) {
 			return new APIResponse(HttpStatus.BAD_REQUEST, false, null, e.toString());
 		}
+	}
+
+	public APIResponse saveRecipe(String token, Recipe recipe) {
+
+		if (!userIsLoggedIn(token)) {
+			return new APIResponse(HttpStatus.UNAUTHORIZED, false, recipe, "Invalid token");
+		}
+
+		if (recipe == null) {
+			return new APIResponse(HttpStatus.BAD_REQUEST, false, recipe, "Recipe is null");
+		}
+
+		try {
+			var user = getUserByToken(token);
+			user.addRecipe(recipe);
+
+			recipe.setUser(user);
+
+			userRepo.save(user);
+
+			return new APIResponse(HttpStatus.OK, true, recipe, "Successfully saved recipe");
+		} catch (Exception e) {
+			return new APIResponse(HttpStatus.INTERNAL_SERVER_ERROR, false, e.toString(),
+					"Adding recipe to User failed");
+		}
+
 	}
 }

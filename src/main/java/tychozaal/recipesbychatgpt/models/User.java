@@ -109,4 +109,12 @@ public class User {
 	public void setToken(String token) {
 		this.token = token;
 	}
+
+	public void addRecipe(Recipe recipe) {
+		recipes.add(recipe);
+	}
+
+	public void removeRecipe(Recipe recipe) {
+		recipes.remove(recipe);
+	}
 }

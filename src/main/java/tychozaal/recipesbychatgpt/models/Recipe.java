@@ -37,7 +37,7 @@ public class Recipe {
 	@Column(nullable = false)
 	private List<Ingredient> ingredients = new ArrayList<Ingredient>();
 
-	@Column(nullable = true)
+	@Column(nullable = true, length = 10000)
 	private String cookingDirections;
 
 	@ManyToOne(optional = true)

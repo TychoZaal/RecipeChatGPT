@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import tychozaal.recipesbychatgpt.models.APIResponse;
+import tychozaal.recipesbychatgpt.models.Recipe;
 import tychozaal.recipesbychatgpt.models.User;
 import tychozaal.recipesbychatgpt.models.dto.LoginDto;
 import tychozaal.recipesbychatgpt.models.dto.NewUserDto;
@@ -39,24 +40,6 @@ public class UserController {
 		return userService.userLogin(loginDto);
 	}
 
-	// TODO: Change return type to status
-	public boolean userIsLoggedIn(String token) {
-
-		return userService.userIsLoggedIn(token);
-	}
-
-	// TODO: Change return type to status
-	public boolean userIsAdmin(String token) {
-
-		return userService.userIsAdmin(token);
-	}
-
-	// TODO: Change return type to status
-	public boolean userIdMatches(String token, long userId) {
-
-		return userService.userIdMatches(token, userId);
-	}
-
 	@GetMapping("user/all")
 	public APIResponse findAllUsers() {
 		return userService.findAllUsers();
@@ -67,5 +50,24 @@ public class UserController {
 			@PathVariable long id) {
 
 		return userService.editUser(token, user, id);
+	}
+
+	public boolean userIsLoggedIn(String token) {
+
+		return userService.userIsLoggedIn(token);
+	}
+
+	public boolean userIsAdmin(String token) {
+
+		return userService.userIsAdmin(token);
+	}
+
+	public boolean userIdMatches(String token, long userId, boolean overrideAble) {
+
+		return userService.userIdMatches(token, userId, overrideAble);
+	}
+
+	public APIResponse saveRecipe(String token, Recipe recipe) {
+		return userService.saveRecipe(token, recipe);
 	}
 }
