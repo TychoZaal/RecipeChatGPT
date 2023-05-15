@@ -1,19 +1,16 @@
 package tychozaal.recipesbychatgpt.controller;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
 import tychozaal.recipesbychatgpt.models.APIResponse;
-import tychozaal.recipesbychatgpt.models.Ingredient;
 import tychozaal.recipesbychatgpt.models.Recipe;
+import tychozaal.recipesbychatgpt.models.dto.RecipeRequestDto;
 import tychozaal.recipesbychatgpt.services.RecipeGeneratorService;
 import tychozaal.recipesbychatgpt.services.RecipeStorageService;
 
@@ -30,12 +27,13 @@ public class RecipeController {
 	@Autowired
 	private UserController userController;
 
-	@GetMapping("recipe/generate/{typeOfMeal}/{region}")
+	@GetMapping("recipe/generate/")
 	public APIResponse generateRecipe(@RequestHeader(name = "Authorization") String token,
-			@RequestBody List<Ingredient> ingredients, @PathVariable String typeOfMeal, @PathVariable String region) {
+			@RequestBody RecipeRequestDto recipeRequestDto) {
 
 		// Generate the recipe
-		APIResponse apiResponse = recipeGenerator.generateRecipe(ingredients, typeOfMeal, region);
+		APIResponse apiResponse = recipeGenerator.generateRecipe(recipeRequestDto.getIngredients(),
+				recipeRequestDto.getMealType().toString(), recipeRequestDto.getTags());
 
 		if (!apiResponse.isSuccess || apiResponse.body == null) {
 			return apiResponse;

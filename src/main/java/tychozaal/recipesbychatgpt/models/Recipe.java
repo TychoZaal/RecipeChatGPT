@@ -11,6 +11,8 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 public class Recipe {
 
@@ -41,6 +43,7 @@ public class Recipe {
 	private String cookingDirections;
 
 	@ManyToOne(optional = true)
+	@JsonIgnore
 	private User user;
 
 	public long getId() {

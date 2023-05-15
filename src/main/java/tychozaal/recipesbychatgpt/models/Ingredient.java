@@ -7,6 +7,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 public class Ingredient {
 
@@ -28,6 +30,7 @@ public class Ingredient {
 	private String measurements;
 
 	@ManyToOne(optional = true)
+	@JsonIgnore
 	private Recipe recipe;
 
 	public long getId() {

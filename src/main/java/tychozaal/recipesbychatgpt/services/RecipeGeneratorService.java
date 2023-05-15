@@ -26,9 +26,9 @@ public class RecipeGeneratorService {
 	@Value("${chatgptkey}")
 	String chatGPTKey;
 
-	public APIResponse generateRecipe(List<Ingredient> ingredients, String typeOfMeal, String region) {
+	public APIResponse generateRecipe(List<Ingredient> ingredients, String typeOfMeal, List<String> tags) {
 		try {
-			String responseBody = askChatGPT(formatInput(ingredients, typeOfMeal, region));
+			String responseBody = askChatGPT(formatInput(ingredients, typeOfMeal, tags));
 
 			String cleanResponseBody = cleanHTTPBody(responseBody);
 
@@ -66,19 +66,24 @@ public class RecipeGeneratorService {
 		return "Failed asking ChatGPT";
 	}
 
-	private String formatInput(List<Ingredient> ingredients, String typeOfMeal, String region) {
+	private String formatInput(List<Ingredient> ingredients, String typeOfMeal, List<String> tags) {
 
 		String ingredientsString = "";
+		String tagsString = "";
 
 		for (Ingredient ingredient : ingredients) {
 			String measurementString = ingredient.getMeasurements() != null ? ingredient.getMeasurements() : "";
 			ingredientsString += measurementString + " " + ingredient.getName() + ", ";
 		}
 
-		region = region == null ? "" : region;
+		for (String tag : tags) {
+			tagsString += tag + ", ";
+		}
 
 		return new String("Given the following ingredients: " + ingredientsString + ". " + "Can you provide me with a "
-				+ region + " " + typeOfMeal + " recipe that uses some or all of these ingredients? "
+				+ typeOfMeal
+				+ " recipe that uses some or all of these ingredients? It should also have the following characteristics: "
+				+ tagsString
 				+ "Please start the response with the recipe name, then follow up with the list of ingredients, followed by the directions.");
 	}
 
