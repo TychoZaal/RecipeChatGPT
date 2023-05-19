@@ -2,15 +2,21 @@ package tychozaal.recipesbychatgpt.models;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 public class Ingredient {
+
+	public Ingredient() {
+
+	}
 
 	public Ingredient(String name, String measurements, Recipe recipe) {
 		super();
@@ -29,7 +35,8 @@ public class Ingredient {
 	@Column(nullable = true)
 	private String measurements;
 
-	@ManyToOne(optional = true)
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "recipe_id")
 	@JsonIgnore
 	private Recipe recipe;
 
@@ -62,6 +69,12 @@ public class Ingredient {
 	}
 
 	public void setRecipe(Recipe recipe) {
+		if (this.recipe != null) {
+			this.recipe.getIngredients().remove(this);
+		}
 		this.recipe = recipe;
+		if (recipe != null) {
+			recipe.getIngredients().add(this);
+		}
 	}
 }

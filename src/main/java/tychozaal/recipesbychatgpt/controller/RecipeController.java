@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import tychozaal.recipesbychatgpt.models.APIResponse;
@@ -28,6 +29,7 @@ public class RecipeController {
 	private UserController userController;
 
 	@GetMapping("recipe/generate/")
+	@ResponseStatus(code = HttpStatus.OK)
 	public APIResponse generateRecipe(@RequestHeader(name = "Authorization") String token,
 			@RequestBody RecipeRequestDto recipeRequestDto) {
 
@@ -59,6 +61,11 @@ public class RecipeController {
 		}
 
 		return new APIResponse(HttpStatus.OK, true, recipe, "Successfully generated recipe");
+	}
 
+	@GetMapping("recipe/all/user")
+	@ResponseStatus(code = HttpStatus.OK)
+	public APIResponse getAllRecipesByUser(@RequestHeader(name = "Authorization") String token) {
+		return recipeStorage.getAllRecipesByUser(userController.getUserByToken(token));
 	}
 }

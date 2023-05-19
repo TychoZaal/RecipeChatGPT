@@ -40,6 +40,10 @@ public class UserController {
 		return userService.userLogin(loginDto);
 	}
 
+	public User getUserByToken(String token) {
+		return userService.getUserByToken(token);
+	}
+
 	@GetMapping("user/all")
 	public APIResponse findAllUsers() {
 		return userService.findAllUsers();

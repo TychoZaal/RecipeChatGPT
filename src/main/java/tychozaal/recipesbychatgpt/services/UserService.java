@@ -102,7 +102,7 @@ public class UserService {
 		}
 	}
 
-	private User getUserByToken(String token) {
+	public User getUserByToken(String token) {
 		return userRepo.findByToken(token);
 	}
 

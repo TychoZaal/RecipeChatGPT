@@ -70,6 +70,7 @@ public class RecipeGeneratorService {
 
 		String ingredientsString = "";
 		String tagsString = "";
+		typeOfMeal = typeOfMeal == null ? "" : typeOfMeal;
 
 		for (Ingredient ingredient : ingredients) {
 			String measurementString = ingredient.getMeasurements() != null ? ingredient.getMeasurements() : "";
@@ -118,8 +119,6 @@ public class RecipeGeneratorService {
 		recipe.setName(name);
 		recipe.setIngredients(parseIngredients(ingredients));
 		recipe.setCookingDirections(directions);
-
-		// TODO: Add user to recipe and vise versa
 
 		return recipe;
 	}

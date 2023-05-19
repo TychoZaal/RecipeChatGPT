@@ -3,6 +3,7 @@ package tychozaal.recipesbychatgpt.models;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -35,8 +36,7 @@ public class Recipe {
 	@Column(nullable = false)
 	private String name;
 
-	@OneToMany(mappedBy = "recipe")
-	@Column(nullable = false)
+	@OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Ingredient> ingredients = new ArrayList<Ingredient>();
 
 	@Column(nullable = true, length = 10000)
@@ -67,7 +67,10 @@ public class Recipe {
 	}
 
 	public void setIngredients(List<Ingredient> ingredients) {
-		this.ingredients = ingredients;
+		for (Ingredient ingredient : ingredients) {
+			this.ingredients.add(ingredient);
+			ingredient.setRecipe(this);
+		}
 	}
 
 	public String getCookingDirections() {
